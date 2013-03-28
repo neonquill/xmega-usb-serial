@@ -121,16 +121,13 @@ blink(int count) {
   _delay_ms(400);
 }
 
-// Setup using the external oscillator running at 1024 Hz.
 void
-setup_external(bool low_power) {
-  // Configure the external oscillator: 32.768 kHz.
-  CLKSYS_XOSC_Config(OSC_FRQRANGE_04TO2_gc, low_power, OSC_XOSCSEL_32KHz_gc);
-
-  // Enable the 32 MHz internal oscillator and the external oscillator.
-  CLKSYS_Enable(OSC_RC32MEN_bm | OSC_XOSCEN_bm);
+setup_clocks(void) {
+  // Enable the 32 MHz internal oscillator.
+  CLKSYS_Enable(OSC_RC32MEN_bm);
 
   // Set the multiplication factor and clock reference for the PLL.
+  // The USB clock runs at 48 MHz.
   // 32 MHz / 4 = 4 MHz, 48 MHz / 4 MHz = 6 (factor).
   OSC.PLLCTRL = (OSC_PLLSRC_RC32M_gc | (6 << OSC_PLLFAC_gp));
 
@@ -143,33 +140,19 @@ setup_external(bool low_power) {
   CLKSYS_Main_ClockSource_Select(CLK_SCLKSEL_RC32M_gc);
 
   // Enable the PLL.
-  CLKSYS_Enable(OSC_PLLEN_bm | OSC_RC32MEN_bm | OSC_XOSCEN_bm);
-
-  /* Trigger an interrupt every minute. */
-  RTC.PER = 30720;
-  RTC.CTRL = RTC_PRESCALER_DIV2_gc;
-
-  // Wait for the external oscillator to be ready.
-  do {
-  } while (CLKSYS_IsReady(OSC_XOSCRDY_bm) == 0);
-
-  // Switch to the external oscillator scaled to 1.024 kHz to drive the RTC.
-  CLKSYS_RTC_ClockSource_Enable(CLK_RTCSRC_TOSC_gc);
+  CLKSYS_Enable(OSC_PLLEN_bm | OSC_RC32MEN_bm);
 
   // Turn off all the other clocks.
-  CLKSYS_Disable(OSC_RC32KEN_bm | OSC_RC2MEN_bm);
+  CLKSYS_Disable(OSC_RC32KEN_bm | OSC_RC2MEN_bm | OSC_XOSCEN_bm);
 
   // Wait for the PLL to be ready.
   do {
   } while (CLKSYS_IsReady(OSC_PLLRDY_bm) == 0);
-
-  // Enable the RTC overflow interrupt, as a low level interrupt.
-  RTC.INTCTRL = (RTC.INTCTRL & ~RTC_OVFINTLVL_gm) | RTC_OVFINTLVL_LO_gc;
 }
 
 void
 setup(void) {
-  setup_external(false);
+  setup_clocks();
   setup_pins();
   // Disable the USART.
   USARTD0.CTRLB = 0x00;
