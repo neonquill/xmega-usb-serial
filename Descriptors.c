@@ -227,9 +227,9 @@ const USB_Descriptor_String_t PROGMEM ManufacturerString =
  */
 const USB_Descriptor_String_t PROGMEM ProductString =
 {
-    .Header                 = {.Size = USB_STRING_LEN(13), .Type = DTYPE_String},
+    .Header                 = {.Size = USB_STRING_LEN(19), .Type = DTYPE_String},
 
-    .UnicodeString          = L"LUFA CDC Demo"
+    .UnicodeString          = L"Xmega - Hello World"
 };
 
 /** This function is called by the library when in device mode, and
