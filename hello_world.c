@@ -168,22 +168,28 @@ setup(void) {
 
 int
 main(void) {
-  uint8_t count = 0;
+  uint8_t i = 1;
+  uint8_t count = 3;
 
   setup();
 
-  while(1) {
-    if (count == 0) {
-      // Toggle the Port E outputs.
-      // XXX PORTE.OUTTGL = 0xff;
+  blink(3);
+  _delay_ms(100);
+
+  while (1) {
+    // Print greeting at most count times.
+    if (i <= count) {
       if (USB_DeviceState == DEVICE_STATE_Configured && ok_to_send) {
-        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Hello World!\r\n");
+        blink(i);
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Hello World! ");
+        CDC_Device_SendByte(&VirtualSerial_CDC_Interface, '0' + i);
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "\r\n");
         CDC_Device_Flush(&VirtualSerial_CDC_Interface);
+
+        i++;
       }
     }
-      
-    //blink(2);
-    //_delay_ms(2000);
+
     if (USB_DeviceState == DEVICE_STATE_Configured) {
       /* Must throw away unused bytes from the host, or it will lock up
          while waiting for the device */
@@ -191,8 +197,5 @@ main(void) {
     }
     CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
     USB_USBTask();
-
-    count++;
-    _delay_ms(1);
   }
 }
