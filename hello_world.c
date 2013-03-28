@@ -154,8 +154,6 @@ void
 setup(void) {
   setup_clocks();
   setup_pins();
-  // Disable the USART.
-  USARTD0.CTRLB = 0x00;
 
   // Initialize the USB device.
   USB_Init();
